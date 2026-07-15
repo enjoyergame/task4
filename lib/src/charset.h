@@ -12,15 +12,16 @@
 #include <stddef.h>
 
 // Флаги стандартных групп символов для опции -C
-#define CHARSET_GROUP_LOWER   (1 << 0) // 'a' - маленькие латинские
-#define CHARSET_GROUP_UPPER   (1 << 1) // 'A' - большие латинские
-#define CHARSET_GROUP_DIGITS  (1 << 2) // 'D' - цифры
+#define CHARSET_GROUP_LOWER (1 << 0)   // 'a' - маленькие латинские
+#define CHARSET_GROUP_UPPER (1 << 1)   // 'A' - большие латинские
+#define CHARSET_GROUP_DIGITS (1 << 2)  // 'D' - цифры
 #define CHARSET_GROUP_SPECIAL (1 << 3) // 'S' - спецсимволы
 
-typedef struct {
-    int groups;         // Битовая маска выбранных групп (-C)
-    char *custom;       // Пользовательский алфавит (-a)
-    size_t custom_len;  // Длина пользовательского алфавита
+typedef struct
+{
+    int groups;        // Битовая маска выбранных групп (-C)
+    char *custom;      // Пользовательский алфавит (-a)
+    size_t custom_len; // Длина пользовательского алфавита
 } CharsetInfo;
 
 void charset_init(CharsetInfo *cs);
