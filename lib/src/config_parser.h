@@ -1,5 +1,5 @@
 /*
-парсим конфиг
+конфиг
 
 Кучуков Ридаль Радикович
 МК-101
@@ -14,7 +14,8 @@
 
 #define CONFIG_NOT_SET -1
 
-typedef struct {
+typedef struct
+{
     int minl;
     int maxl;
     int n;
