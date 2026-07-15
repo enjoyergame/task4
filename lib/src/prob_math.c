@@ -122,6 +122,7 @@ static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config) {
     }
     pt->count = count;
 
+    // 3. Заполняем символы
     size_t idx = 0;
     if (config->has_C) {
         for (size_t i = 0; i < GROUP_MAP_SIZE; i++) {
@@ -152,7 +153,6 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
     
     if (pt->count == 0) return PASSGEN_OK;
 
-    // Парсим токены -p
     for (size_t i = 0; i < tokens->count; i++) {
         if (strcmp(tokens->items[i].key, "-p") != 0) continue;
 
@@ -176,7 +176,7 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
         }
         
         if (!found) {
-            err = PASSGEN_ERR_PROB_INVALID; 
+            err = PASSGEN_ERR_UNKNOWN_SYMBOL; 
             goto cleanup;
         }
     }

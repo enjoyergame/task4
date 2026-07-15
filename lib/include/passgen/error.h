@@ -25,18 +25,23 @@ typedef enum
     PASSGEN_ERR_CONFLICT_PAIR_N,   // парная опция вместе с -n
     PASSGEN_ERR_INCOMPLETE_PAIR,   // есть одна из парных опций без второй
     PASSGEN_ERR_INCOMPLETE_RANGE,  // задан -minl без -maxl или наоборот
+    PASSGEN_ERR_RANGE_ORDER,       // -minl больше -maxl
+
     // Ошибки вероятностей 
-    PASSGEN_ERR_PROB_OVERFLOW, // сумма вероятностей превышает 1.0
-    PASSGEN_ERR_PROB_INVALID,  // вероятность не в диапазоне [0,1]
+    PASSGEN_ERR_PROB_OVERFLOW,  // сумма вероятностей превышает 1.0
+    PASSGEN_ERR_PROB_INVALID,   // вероятность не в диапазоне [0,1]
+    PASSGEN_ERR_UNKNOWN_SYMBOL, // символ из вероятностей не найден в алфавите
+
+    // Ошибки генерации и чарсета
+    PASSGEN_ERR_INVALID_CHARSET_GROUP, // некорректная группа в -C
+    PASSGEN_ERR_EMPTY_ALPHABET,        // алфавит пуст
+    PASSGEN_ERR_BUFFER_TOO_SMALL,      // буфер под пароль слишком мал
 
     // Общие 
     PASSGEN_ERR_NO_MEMORY, // ошибка выделения памяти
     PASSGEN_ERR_UNKNOWN    // запасной вариант
 } PassgenError;
 
-/*
-Возвращает текстовое сообщение, соответствующее коду ошибки.
-*/
 const char *passgen_error_message(PassgenError code);
 
-#endif // PASSGEN_ERROR_H 
+#endif // PASSGEN_ERROR_H

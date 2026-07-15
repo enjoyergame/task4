@@ -31,10 +31,20 @@ const char *passgen_error_message(PassgenError code)
             return "Error: only one of the paired options was specified";
         case PASSGEN_ERR_INCOMPLETE_RANGE:
             return "Error: only one length bound (-minl/-maxl) was specified";
+        case PASSGEN_ERR_RANGE_ORDER:
+            return "Error: minimum length (-minl) cannot be greater than maximum length (-maxl)";
         case PASSGEN_ERR_PROB_OVERFLOW:
             return "Error: sum of probabilities exceeds 1.0";
         case PASSGEN_ERR_PROB_INVALID:
             return "Error: probability out of valid range";
+        case PASSGEN_ERR_UNKNOWN_SYMBOL:
+            return "Error: symbol in probability rules not found in the alphabet";
+        case PASSGEN_ERR_INVALID_CHARSET_GROUP:
+            return "Error: invalid character set group (expected a, A, D, or S)";
+        case PASSGEN_ERR_EMPTY_ALPHABET:
+            return "Error: resulting character set is empty";
+        case PASSGEN_ERR_BUFFER_TOO_SMALL:
+            return "Error: output buffer is too small for the password";
         case PASSGEN_ERR_NO_MEMORY:
             return "Error: memory allocation failed";
         case PASSGEN_ERR_UNKNOWN:

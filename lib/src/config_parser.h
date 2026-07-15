@@ -14,6 +14,8 @@
 
 #define CONFIG_NOT_SET -1
 
+#define CONFIG_DEFAULT_LENGTH 12
+
 typedef struct
 {
     int minl;
@@ -32,7 +34,6 @@ typedef struct
 void config_init(AppConfig *config);
 void config_free(AppConfig *config);
 
-// Парсит список токенов в конфигурацию и проверяет все логические конфликты
 PassgenError config_parse(AppConfig *config, const TokenList *tokens);
 
 #endif // PASSGEN_CONFIG_PARSER_H
