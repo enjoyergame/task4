@@ -7,7 +7,33 @@
 #include "config_parser.h"
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <limits.h>
 
+static PassgenError parse_positive_int(const char *value, int *out_val)
+{
+    if (value == NULL || *value == '\0')
+    {
+        return PASSGEN_ERR_MISSING_VALUE;
+    }
+
+    char *endptr = NULL;
+    errno = 0;
+    long val = strtol(value, &endptr, 10);
+
+    if (*endptr != '\0')
+    {
+        return PASSGEN_ERR_NOT_A_NUMBER;
+    }
+
+    if (errno == ERANGE || val > INT_MAX || val <= 0)
+    {
+        return PASSGEN_ERR_NOT_A_NUMBER;
+    }
+
+    *out_val = (int)val;
+    return PASSGEN_OK;
+}
 void config_init(AppConfig *config)
 {
     if (config == NULL)
@@ -33,25 +59,6 @@ void config_free(AppConfig *config)
     charset_free(&config->charset);
 }
 
-static PassgenError parse_positive_int(const char *value, int *out_val)
-{
-    if (value == NULL || *value == '\0')
-    {
-        return PASSGEN_ERR_MISSING_VALUE;
-    }
-
-    char *endptr = NULL;
-    long val = strtol(value, &endptr, 10);
-
-    // Число должно состоять только из цифр и быть строго > 0
-    if (*endptr != '\0' || val <= 0)
-    {
-        return PASSGEN_ERR_NOT_A_NUMBER;
-    }
-
-    *out_val = (int)val;
-    return PASSGEN_OK;
-}
 
 PassgenError config_parse(AppConfig *config, const TokenList *tokens) {
     if (config == NULL || tokens == NULL) {
@@ -174,6 +181,10 @@ PassgenError config_parse(AppConfig *config, const TokenList *tokens) {
 
     if (config->c == CONFIG_NOT_SET) {
         config->c = 1;
+    }
+
+    if (config->n == CONFIG_NOT_SET && config->minl == CONFIG_NOT_SET && config->maxl == CONFIG_NOT_SET) {
+        config->n = 12;
     }
 
     return PASSGEN_OK;

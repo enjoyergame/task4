@@ -55,14 +55,15 @@ PassgenError charset_parse_custom(CharsetInfo *cs, const char *value) {
     if (value == NULL || *value == '\0') return PASSGEN_ERR_MISSING_VALUE;
 
     size_t len = strlen(value);
+    
+    bool seen[256] = {false};
 
-    // Проверка на уникальность каждого символа в алфавите
     for (size_t i = 0; i < len; i++) {
-        for (size_t j = i + 1; j < len; j++) {
-            if (value[i] == value[j]) {
-                return PASSGEN_ERR_DUPLICATE_CHAR;
-            }
+        unsigned char c = (unsigned char)value[i]; 
+        if (seen[c]) {
+            return PASSGEN_ERR_DUPLICATE_CHAR;
         }
+        seen[c] = true;
     }
 
     if (cs->custom != NULL) {
