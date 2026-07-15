@@ -11,8 +11,7 @@
 void setUp(void) {}
 void tearDown(void) {}
 
-void test_charset_groups_valid(void)
-{
+void test_charset_groups_valid(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
@@ -25,8 +24,7 @@ void test_charset_groups_valid(void)
     charset_free(&cs);
 }
 
-void test_charset_groups_duplicate_char(void)
-{
+void test_charset_groups_duplicate_char(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
@@ -35,18 +33,17 @@ void test_charset_groups_duplicate_char(void)
     charset_free(&cs);
 }
 
-void test_charset_groups_invalid_char(void)
-{
+void test_charset_groups_invalid_char(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
-    TEST_ASSERT_EQUAL_INT(PASSGEN_ERR_UNKNOWN, charset_parse_groups(&cs, "aX"));
+    // Изменено: теперь мы ожидаем точный код ошибки PASSGEN_ERR_INVALID_CHARSET_GROUP
+    TEST_ASSERT_EQUAL_INT(PASSGEN_ERR_INVALID_CHARSET_GROUP, charset_parse_groups(&cs, "aX"));
 
     charset_free(&cs);
 }
 
-void test_charset_custom_valid(void)
-{
+void test_charset_custom_valid(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
@@ -57,8 +54,7 @@ void test_charset_custom_valid(void)
     charset_free(&cs);
 }
 
-void test_charset_custom_duplicate_char(void)
-{
+void test_charset_custom_duplicate_char(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
@@ -67,8 +63,7 @@ void test_charset_custom_duplicate_char(void)
     charset_free(&cs);
 }
 
-void test_charset_missing_value(void)
-{
+void test_charset_missing_value(void) {
     CharsetInfo cs;
     charset_init(&cs);
 
@@ -78,8 +73,7 @@ void test_charset_missing_value(void)
     charset_free(&cs);
 }
 
-int main(void)
-{
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_charset_groups_valid);
     RUN_TEST(test_charset_groups_duplicate_char);
