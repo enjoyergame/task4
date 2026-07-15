@@ -1,11 +1,13 @@
-add_library(passgen_lib
+
+add_library(passgen_lib STATIC
     src/error.c
-    include/passgen/error.h
+    src/cli_lexer.c
 )
 
-target_include_directories(passgen_lib
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+target_include_directories(passgen_lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(passgen_lib PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )

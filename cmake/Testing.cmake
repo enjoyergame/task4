@@ -35,6 +35,8 @@ function(register_all_tests_in_dir base_tests_dir custom_target_name)
                 set(test_exe_name "test_${sub_dir}_${custom_target_name}")
                 
                 add_executable(${test_exe_name} ${TEST_SOURCES})
+                
+                target_include_directories(${test_exe_name} PRIVATE "${CMAKE_SOURCE_DIR}/lib/src")
                 target_link_libraries(${test_exe_name} PRIVATE unity ${ARGN})
                 
                 # Регистрируем тест в CTest
