@@ -10,6 +10,6 @@ passgen
 
 #include "passgen/error.h"
 
-PassgenError passgen_run(int argc, char *const argv[]);
+PassgenError passgen_run(int argc, char *argv[]);
 
 #endif // PASSGEN_H
