@@ -19,6 +19,7 @@ PassgenError passgen_run(int argc, char *const argv[]) {
     config_init(&config);
     ProbTable pt;
     prob_table_init(&pt);
+    char *buf = NULL;
     
     PassgenError err = cli_lexer_tokenize(argc, argv, &tokens);
     if (err != PASSGEN_OK) {
@@ -47,27 +48,27 @@ PassgenError passgen_run(int argc, char *const argv[]) {
         max_len = config.maxl;
     }
 
-    for (int i = 0; i < config.c; i++) {
-        
-        char *buf = (char *)malloc(max_len + 1);
-        if (buf == NULL) {
-            err = PASSGEN_ERR_NO_MEMORY;
-            fprintf(stderr, "%s\n", passgen_error_message(err));
-            goto cleanup;
-        }
+    buf = (char *)malloc(max_len + 1);
+    if (buf == NULL) {
+        err = PASSGEN_ERR_NO_MEMORY;
+        fprintf(stderr, "%s\n", passgen_error_message(err));
+        goto cleanup;
+    }
 
+    for (int i = 0; i < config.c; i++) {
         err = generator_create_password(&config, &pt, buf, max_len + 1);
         if (err != PASSGEN_OK) {
             fprintf(stderr, "%s\n", passgen_error_message(err));
-            free(buf);
             goto cleanup;
         }
 
         printf("%s\n", buf);
-        free(buf);
     }
 
 cleanup:
+    if (buf != NULL) {
+        free(buf);
+    }
     prob_table_free(&pt);
     config_free(&config);
     token_list_free(&tokens);
