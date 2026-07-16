@@ -3,6 +3,9 @@ add_library(passgen_lib STATIC
     src/cli_lexer.c
     src/charset.c
     src/config_parser.c
+    src/prob_math.c
+    src/generator.c
+    src/passgen.c
 )
 
 target_include_directories(passgen_lib PUBLIC
