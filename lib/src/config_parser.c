@@ -69,60 +69,168 @@ PassgenError config_parse(AppConfig *config, const TokenList *tokens)
     {
         const Token *t = &tokens->items[i];
 
-        if (strcmp(t->key, "-minl") == 0) {
-            if (config->minl != CONFIG_NOT_SET) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
-            if ((err = parse_positive_int(t->value, &config->minl)) != PASSGEN_OK) goto cleanup_on_error;
+        if (strcmp(t->key, "-minl") == 0)
+        {
+            if (config->minl != CONFIG_NOT_SET)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
+            if ((err = parse_positive_int(t->value, &config->minl)) != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-maxl") == 0) {
-            if (config->maxl != CONFIG_NOT_SET) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
-            if ((err = parse_positive_int(t->value, &config->maxl)) != PASSGEN_OK) goto cleanup_on_error;
+        else if (strcmp(t->key, "-maxl") == 0)
+        {
+            if (config->maxl != CONFIG_NOT_SET)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
+            if ((err = parse_positive_int(t->value, &config->maxl)) != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-n") == 0) {
-            if (config->n != CONFIG_NOT_SET) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
-            if ((err = parse_positive_int(t->value, &config->n)) != PASSGEN_OK) goto cleanup_on_error;
+        else if (strcmp(t->key, "-n") == 0)
+        {
+            if (config->n != CONFIG_NOT_SET)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
+            if ((err = parse_positive_int(t->value, &config->n)) != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-c") == 0) {
-            if (config->c != CONFIG_NOT_SET) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
-            if ((err = parse_positive_int(t->value, &config->c)) != PASSGEN_OK) goto cleanup_on_error;
+        else if (strcmp(t->key, "-c") == 0)
+        {
+            if (config->c != CONFIG_NOT_SET)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
+            if ((err = parse_positive_int(t->value, &config->c)) != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-C") == 0) {
-            if (config->has_C) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
+        else if (strcmp(t->key, "-C") == 0)
+        {
+            if (config->has_C)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
             config->has_C = true;
-            if ((err = charset_parse_groups(&config->charset, t->value)) != PASSGEN_OK) goto cleanup_on_error;
+            if ((err = charset_parse_groups(&config->charset, t->value)) != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-a") == 0) {
-            if (config->has_a) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
+        else if (strcmp(t->key, "-a") == 0)
+        {
+            if (config->has_a)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
             config->has_a = true;
-            err = (t->value == NULL) ? charset_use_default(&config->charset) : charset_parse_custom(&config->charset, t->value);
-            if (err != PASSGEN_OK) goto cleanup_on_error;
+            if (t->value == NULL)
+            {
+                err = charset_use_default(&config->charset);
+            }
+            else
+            {
+                err = charset_parse_custom(&config->charset, t->value);
+            }
+            if (err != PASSGEN_OK)
+            {
+                return err;
+            }
         }
-        else if (strcmp(t->key, "-s") == 0) {
-            if (config->has_s) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
+        else if (strcmp(t->key, "-s") == 0)
+        {
+            if (config->has_s)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
             config->has_s = true;
         }
-        else if (strcmp(t->key, "-i") == 0) {
-            if (config->has_i) { err = PASSGEN_ERR_DUPLICATE_OPTION; goto cleanup_on_error; }
+        else if (strcmp(t->key, "-i") == 0)
+        {
+            if (config->has_i)
+            {
+                err = PASSGEN_ERR_DUPLICATE_OPTION;
+                return err;
+            }
             config->has_i = true;
         }
     }
 
-    if (config->n != CONFIG_NOT_SET && (config->minl != CONFIG_NOT_SET || config->maxl != CONFIG_NOT_SET)) { err = PASSGEN_ERR_CONFLICT_N_MINMAX; goto cleanup_on_error; }
-    if (config->has_a && config->has_C) { err = PASSGEN_ERR_CONFLICT_A_C; goto cleanup_on_error; }
-    if ((config->has_s || config->has_i) && config->n != CONFIG_NOT_SET) { err = PASSGEN_ERR_CONFLICT_PAIR_N; goto cleanup_on_error; }
-    if ((config->has_s && !config->has_i) || (!config->has_s && config->has_i)) { err = PASSGEN_ERR_INCOMPLETE_PAIR; goto cleanup_on_error; }
-    if ((config->minl != CONFIG_NOT_SET && config->maxl == CONFIG_NOT_SET) || (config->minl == CONFIG_NOT_SET && config->maxl != CONFIG_NOT_SET)) { err = PASSGEN_ERR_INCOMPLETE_RANGE; goto cleanup_on_error; }
-    if (config->minl > config->maxl) { err = PASSGEN_ERR_RANGE_ORDER; goto cleanup_on_error; }
-
-    if (!config->has_a && !config->has_C) {
-        config->has_a = true;
-        if ((err = charset_use_default(&config->charset)) != PASSGEN_OK) goto cleanup_on_error;
+    if (config->n != CONFIG_NOT_SET && (config->minl != CONFIG_NOT_SET || config->maxl != CONFIG_NOT_SET))
+    {
+        err = PASSGEN_ERR_CONFLICT_N_MINMAX;
+        return err;
     }
-    if (config->c == CONFIG_NOT_SET) config->c = 1;
-    if (config->n == CONFIG_NOT_SET && config->minl == CONFIG_NOT_SET && config->maxl == CONFIG_NOT_SET) config->n = CONFIG_DEFAULT_LENGTH;
+
+    if (config->has_a && config->has_C)
+    {
+        err = PASSGEN_ERR_CONFLICT_A_C;
+        return err;
+    }
+
+    bool has_pair = (config->has_s || config->has_i);
+    if (has_pair && config->n != CONFIG_NOT_SET)
+    {
+        err = PASSGEN_ERR_CONFLICT_PAIR_N;
+        return err;
+    }
+
+    if ((config->has_s && !config->has_i) || (!config->has_s && config->has_i))
+    {
+        err = PASSGEN_ERR_INCOMPLETE_PAIR;
+        return err;
+    }
+
+    if ((config->minl != CONFIG_NOT_SET && config->maxl == CONFIG_NOT_SET) ||
+        (config->minl == CONFIG_NOT_SET && config->maxl != CONFIG_NOT_SET))
+    {
+        err = PASSGEN_ERR_INCOMPLETE_RANGE;
+        return err;
+    }
+
+    if (config->minl != CONFIG_NOT_SET && config->maxl != CONFIG_NOT_SET)
+    {
+        if (config->minl > config->maxl)
+        {
+            err = PASSGEN_ERR_RANGE_ORDER;
+            return err;
+        }
+    }
+
+    if (!config->has_a && !config->has_C)
+    {
+        config->has_a = true;
+        err = charset_use_default(&config->charset);
+        if (err != PASSGEN_OK)
+        {
+            return err;
+        }
+    }
+
+    if (config->c == CONFIG_NOT_SET)
+    {
+        config->c = 1;
+    }
+
+    if (config->n == CONFIG_NOT_SET && config->minl == CONFIG_NOT_SET && config->maxl == CONFIG_NOT_SET)
+    {
+        config->n = CONFIG_DEFAULT_LENGTH;
+    }
 
     return PASSGEN_OK;
-
-cleanup_on_error:
-    config_free(config);
-    return err;
 }

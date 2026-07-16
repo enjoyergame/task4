@@ -135,12 +135,12 @@ static int extract_value(const char *remainder, int argc, char *const argv[],
             return 0;
         }
         const char *next = argv[i + 1];
-        size_t dummy_len;
-        int next_is_option = (next[0] == '-' && next[1] != '\0' &&
-                               match_known_prefix(next, &dummy_len) != NULL);
-        if (next_is_option) {
+        
+        // Исправление по ревью: если начинается с '-', это опция, а не значение
+        if (next[0] == '-') {
             return 0;
         }
+        
         *out_value = str_dup(next);
         if (*out_value == NULL) {
             *out_err = PASSGEN_ERR_NO_MEMORY;
