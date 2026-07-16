@@ -5,7 +5,7 @@ main
 МК-101
 */
 
-#include "passgen.h"
+#include "passgen/passgen.h"
 
 int main(int argc, char *argv[])
 {
