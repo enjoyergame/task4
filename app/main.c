@@ -5,13 +5,13 @@ main
 МК-101
 */
 
-#include <stdio.h>
+#include "passgen.h"
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
-
-    printf("passgen: not implemented yet\n");
+    PassgenError err = passgen_run(argc, argv);
+    if (err != PASSGEN_OK) {
+        return 1;
+    }
     return 0;
 }
