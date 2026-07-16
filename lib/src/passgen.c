@@ -40,17 +40,23 @@ PassgenError passgen_run(int argc, char *const argv[]) {
 
     generator_init();
 
+    int max_len = CONFIG_DEFAULT_LENGTH;
+    if (config.n != CONFIG_NOT_SET) {
+        max_len = config.n;
+    } else if (config.maxl != CONFIG_NOT_SET) {
+        max_len = config.maxl;
+    }
+
     for (int i = 0; i < config.c; i++) {
-        int len = generator_determine_length(&config);
         
-        char *buf = (char *)malloc(len + 1);
+        char *buf = (char *)malloc(max_len + 1);
         if (buf == NULL) {
             err = PASSGEN_ERR_NO_MEMORY;
             fprintf(stderr, "%s\n", passgen_error_message(err));
             goto cleanup;
         }
 
-        err = generator_create_password(&config, &pt, buf, len + 1);
+        err = generator_create_password(&config, &pt, buf, max_len + 1);
         if (err != PASSGEN_OK) {
             fprintf(stderr, "%s\n", passgen_error_message(err));
             free(buf);
