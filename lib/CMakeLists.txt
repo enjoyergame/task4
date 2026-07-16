@@ -8,15 +8,16 @@ add_library(passgen_lib STATIC
     src/passgen.c
 )
 
+# PUBLIC означает, что любой, кто использует эту библиотеку, 
+# автоматически получит доступ к этой папке для поиска заголовков
 target_include_directories(passgen_lib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 target_include_directories(passgen_lib PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-# Поиск математической библиотеки m и линковка с ней при нахождении
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
     target_link_libraries(passgen_lib PRIVATE ${MATH_LIBRARY})
