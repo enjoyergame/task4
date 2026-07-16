@@ -5,7 +5,7 @@
 МК-101
 */
 
-#include "passgen.h"
+#include "passgen/passgen.h"
 #include "cli_lexer.h"
 #include "config_parser.h"
 #include "prob_math.h"
