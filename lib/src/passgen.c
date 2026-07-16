@@ -15,11 +15,11 @@
 
 PassgenError passgen_run(int argc, char *argv[])
 {
-    TokenList tokens = {NULL, 0};
-    AppConfig config;
-    config_init(&config);
-    ProbTable pt;
-    prob_table_init(&pt);
+    TokenList tokens = {NULL, 0}; // cli_lexer.h
+    AppConfig config;             // config_parser.h
+    config_init(&config);         // инициализация
+    ProbTable pt;                 // prob_math.h
+    prob_table_init(&pt);         // инициализация
     char *buf = NULL;
 
     PassgenError err = cli_lexer_tokenize(argc, argv, &tokens);

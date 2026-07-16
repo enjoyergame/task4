@@ -10,16 +10,22 @@
 #include <string.h>
 #include <stdbool.h>
 
-void charset_init(CharsetInfo *cs) {
-    if (cs == NULL) return;
+// инициализация
+void charset_init(CharsetInfo *cs)
+{
+    if (cs == NULL)
+        return;
     cs->groups = 0;
     cs->custom = NULL;
     cs->custom_len = 0;
 }
-
-void charset_free(CharsetInfo *cs) {
-    if (cs == NULL) return;
-    if (cs->custom != NULL) {
+// очистка
+void charset_free(CharsetInfo *cs)
+{
+    if (cs == NULL)
+        return;
+    if (cs->custom != NULL)
+    {
         free(cs->custom);
         cs->custom = NULL;
     }
@@ -27,22 +33,36 @@ void charset_free(CharsetInfo *cs) {
     cs->groups = 0;
 }
 
-PassgenError charset_parse_groups(CharsetInfo *cs, const char *value) {
-    if (cs == NULL) return PASSGEN_ERR_UNKNOWN;
-    if (value == NULL || *value == '\0') return PASSGEN_ERR_MISSING_VALUE;
+PassgenError charset_parse_groups(CharsetInfo *cs, const char *value) // группы
+{
+    if (cs == NULL)
+        return PASSGEN_ERR_UNKNOWN;
+    if (value == NULL || *value == '\0')
+        return PASSGEN_ERR_MISSING_VALUE;
 
-    for (const char *p = value; *p != '\0'; p++) {
+    for (const char *p = value; *p != '\0'; p++)
+    {
         int flag = 0;
-        switch (*p) {
-            case 'a': flag = CHARSET_GROUP_LOWER; break;
-            case 'A': flag = CHARSET_GROUP_UPPER; break;
-            case 'D': flag = CHARSET_GROUP_DIGITS; break;
-            case 'S': flag = CHARSET_GROUP_SPECIAL; break;
-            default:
-                return PASSGEN_ERR_INVALID_CHARSET_GROUP;
+        switch (*p)
+        {
+        case 'a':
+            flag = CHARSET_GROUP_LOWER;
+            break;
+        case 'A':
+            flag = CHARSET_GROUP_UPPER;
+            break;
+        case 'D':
+            flag = CHARSET_GROUP_DIGITS;
+            break;
+        case 'S':
+            flag = CHARSET_GROUP_SPECIAL;
+            break;
+        default:
+            return PASSGEN_ERR_INVALID_CHARSET_GROUP;
         }
 
-        if ((cs->groups & flag) != 0) {
+        if ((cs->groups & flag) != 0)
+        {
             return PASSGEN_ERR_DUPLICATE_CHAR;
         }
         cs->groups |= flag;
@@ -51,28 +71,36 @@ PassgenError charset_parse_groups(CharsetInfo *cs, const char *value) {
     return PASSGEN_OK;
 }
 
-PassgenError charset_parse_custom(CharsetInfo *cs, const char *value) {
-    if (cs == NULL) return PASSGEN_ERR_UNKNOWN;
-    if (value == NULL || *value == '\0') return PASSGEN_ERR_MISSING_VALUE;
+PassgenError charset_parse_custom(CharsetInfo *cs, const char *value)
+{
+    if (cs == NULL)
+        return PASSGEN_ERR_UNKNOWN;
+    if (value == NULL || *value == '\0')
+        return PASSGEN_ERR_MISSING_VALUE;
 
     size_t len = strlen(value);
 
     // Проверка на уникальность каждого символа в алфавите
-    for (size_t i = 0; i < len; i++) {
-        for (size_t j = i + 1; j < len; j++) {
-            if (value[i] == value[j]) {
+    for (size_t i = 0; i < len; i++)
+    {
+        for (size_t j = i + 1; j < len; j++)
+        {
+            if (value[i] == value[j])
+            {
                 return PASSGEN_ERR_DUPLICATE_CHAR;
             }
         }
     }
 
-    if (cs->custom != NULL) {
+    if (cs->custom != NULL)
+    {
         free(cs->custom);
         cs->custom = NULL;
     }
 
     cs->custom = (char *)malloc(len + 1);
-    if (cs->custom == NULL) {
+    if (cs->custom == NULL)
+    {
         return PASSGEN_ERR_NO_MEMORY;
     }
 
@@ -82,22 +110,26 @@ PassgenError charset_parse_custom(CharsetInfo *cs, const char *value) {
     return PASSGEN_OK;
 }
 
-PassgenError charset_use_default(CharsetInfo *cs) {
-    if (cs == NULL) return PASSGEN_ERR_UNKNOWN;
-
+PassgenError charset_use_default(CharsetInfo *cs) // дефолт
+{
+    if (cs == NULL)
+        return PASSGEN_ERR_UNKNOWN;
+    // алфавит и длина
     static const char DEFAULT_ALPHABET[] =
         "abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "0123456789";
     size_t len = sizeof(DEFAULT_ALPHABET) - 1;
 
-    if (cs->custom != NULL) {
+    if (cs->custom != NULL)
+    {
         free(cs->custom);
         cs->custom = NULL;
     }
-
+    // memcpy и malloc потому что алфавит статическая константа (если попытаться очистить статик константу программа падает)
     cs->custom = (char *)malloc(len + 1);
-    if (cs->custom == NULL) {
+    if (cs->custom == NULL)
+    {
         return PASSGEN_ERR_NO_MEMORY;
     }
 

@@ -13,22 +13,27 @@
 
 #define PROB_EPSILON 1e-5
 
-static double parse_simple_double(const char *str, char **endptr) {
+static double parse_simple_double(const char *str, char **endptr)
+{
     double result = 0.0;
     double fraction = 1.0;
     int has_digits = 0;
 
-    while (isspace((unsigned char)*str)) str++;
+    while (isspace((unsigned char)*str))
+        str++;
 
-    while (isdigit((unsigned char)*str)) {
+    while (isdigit((unsigned char)*str))
+    {
         result = result * 10.0 + (*str - '0');
         str++;
         has_digits = 1;
     }
 
-    if (*str == '.' || *str == ',') {
+    if (*str == '.' || *str == ',')
+    {
         str++;
-        while (isdigit((unsigned char)*str)) {
+        while (isdigit((unsigned char)*str))
+        {
             fraction /= 10.0;
             result += (*str - '0') * fraction;
             str++;
@@ -36,106 +41,133 @@ static double parse_simple_double(const char *str, char **endptr) {
         }
     }
 
-    while (isspace((unsigned char)*str)) str++;
+    while (isspace((unsigned char)*str))
+        str++;
 
-    if (endptr) *endptr = (char *)str;
-    
-    return has_digits ? result : -1.0; 
+    if (endptr)
+        *endptr = (char *)str;
+
+    return has_digits ? result : -1.0;
 }
-
-static PassgenError parse_prob_value(const char *value, char *out_sym, double *out_prob) {
-    if (value == NULL || value[0] == '\0') {
+// получение значения из токена
+static PassgenError parse_prob_value(const char *value, char *out_sym, double *out_prob)
+{
+    if (value == NULL || value[0] == '\0')
+    {
         return PASSGEN_ERR_MISSING_VALUE;
     }
 
-    *out_sym = value[0];
+    *out_sym = value[0]; // сам символ
     const char *pstr = value + 1;
 
-    if (*pstr == '=' || *pstr == ':') {
+    // если символ после буквы не цифра и не точка/запятая то сдвигаемся
+    if (!isdigit((unsigned char)*pstr) && *pstr != '.' && *pstr != ',')
+    {
         pstr++;
     }
 
-    if (*pstr == '\0') {
+    if (*pstr == '\0')
+    { // если нет числа
         return PASSGEN_ERR_NOT_A_NUMBER;
     }
 
     char *endptr = NULL;
     double val = parse_simple_double(pstr, &endptr);
 
-    if (*endptr != '\0' || val < 0.0) {
+    if (*endptr != '\0' || val < 0.0)//после значения должен быть пробел
+    {
         return PASSGEN_ERR_NOT_A_NUMBER;
     }
 
-    if (val > 1.0) {
+    if (val > 1.0)
+    {
         return PASSGEN_ERR_PROB_INVALID;
     }
 
     *out_prob = val;
     return PASSGEN_OK;
 }
-
-void prob_table_init(ProbTable *pt) {
-    if (pt == NULL) return;
+// инициализация
+void prob_table_init(ProbTable *pt)
+{
+    if (pt == NULL)
+        return;
     pt->items = NULL;
     pt->count = 0;
 }
-
-void prob_table_free(ProbTable *pt) {
-    if (pt == NULL) return;
-    if (pt->items != NULL) {
+// очистка
+void prob_table_free(ProbTable *pt)
+{
+    if (pt == NULL)
+        return;
+    if (pt->items != NULL)
+    {
         free(pt->items);
         pt->items = NULL;
     }
     pt->count = 0;
 }
 
-static const struct {
+static const struct
+{
     int flag;
     char sym;
 } GROUP_MAP[] = {
-    { CHARSET_GROUP_LOWER, 'a' },
-    { CHARSET_GROUP_UPPER, 'A' },
-    { CHARSET_GROUP_DIGITS, 'D' },
-    { CHARSET_GROUP_SPECIAL, 'S' }
-};
+    {CHARSET_GROUP_LOWER, 'a'},
+    {CHARSET_GROUP_UPPER, 'A'},
+    {CHARSET_GROUP_DIGITS, 'D'},
+    {CHARSET_GROUP_SPECIAL, 'S'}};
 static const size_t GROUP_MAP_SIZE = sizeof(GROUP_MAP) / sizeof(GROUP_MAP[0]);
-
-static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config) {
+// функция что бы узнать сколько всего элементов будет в нашем алфавите и выделить под них память
+static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config)
+{
     size_t count = 0;
 
-    if (config->has_C) {
-        for (size_t i = 0; i < GROUP_MAP_SIZE; i++) {
-            if (config->charset.groups & GROUP_MAP[i].flag) count++;
+    if (config->has_C) //-С бежим по группам
+    {
+        for (size_t i = 0; i < GROUP_MAP_SIZE; i++)
+        {
+            if (config->charset.groups & GROUP_MAP[i].flag) // проверяем стоит ли флажок на группу
+                count++;
         }
-    } else if (config->has_a) {
-        count = config->charset.custom_len;
+    }
+    else if (config->has_a)
+    {
+        count = config->charset.custom_len; //-а алфавит равен длине пользовательской строки
     }
 
-    if (count == 0) {
+    if (count == 0)
+    {
         pt->count = 0;
         return PASSGEN_OK;
     }
 
     pt->items = (ProbItem *)calloc(count, sizeof(ProbItem));
-    if (pt->items == NULL) {
+    if (pt->items == NULL)
+    {
         return PASSGEN_ERR_NO_MEMORY;
     }
     pt->count = count;
 
-    // 3. Заполняем символы
-    size_t idx = 0;
-    if (config->has_C) {
-        for (size_t i = 0; i < GROUP_MAP_SIZE; i++) {
-            if (config->charset.groups & GROUP_MAP[i].flag) {
-                pt->items[idx].symbol = GROUP_MAP[i].sym;
-                pt->items[idx].prob = -1.0;
+    size_t idx = 0; // индекс по пт айтемс
+    if (config->has_C)
+    {
+        for (size_t i = 0; i < GROUP_MAP_SIZE; i++)
+        {
+            if (config->charset.groups & GROUP_MAP[i].flag)
+            {
+                pt->items[idx].symbol = GROUP_MAP[i].sym; // символ груп
+                pt->items[idx].prob = -1.0;               // не задана вероятность
                 idx++;
             }
         }
-    } else if (config->has_a) {
-        for (size_t i = 0; i < config->charset.custom_len; i++) {
-            pt->items[idx].symbol = config->charset.custom[i];
-            pt->items[idx].prob = -1.0;
+    }
+    else if (config->has_a)
+    {
+        for (size_t i = 0; i < config->charset.custom_len; i++)
+        {
+            pt->items[idx].symbol = config->charset.custom[i]; // символ
+            pt->items[idx].prob = -1.0;                        // не проставлена вероятность
             idx++;
         }
     }
@@ -143,29 +175,40 @@ static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config) {
     return PASSGEN_OK;
 }
 
-PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const TokenList *tokens) {
-    if (pt == NULL || config == NULL || tokens == NULL) return PASSGEN_ERR_UNKNOWN;
+PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const TokenList *tokens)
+{
+    if (pt == NULL || config == NULL || tokens == NULL)
+        return PASSGEN_ERR_UNKNOWN;
 
     prob_table_free(pt);
 
-    PassgenError err = populate_symbols(pt, config);
-    if (err != PASSGEN_OK) goto cleanup;
-    
-    if (pt->count == 0) return PASSGEN_OK;
+    PassgenError err = populate_symbols(pt, config); // прошлись либо по алфавиту пользователя (мб дефолтному) либо по группам выделили память
+    if (err != PASSGEN_OK)
+        goto cleanup;
 
-    for (size_t i = 0; i < tokens->count; i++) {
-        if (strcmp(tokens->items[i].key, "-p") != 0) continue;
+    if (pt->count == 0) // лив если пустой алфавит
+        return PASSGEN_OK;
 
+    for (size_t i = 0; i < tokens->count; i++)
+    {
+        if (strcmp(tokens->items[i].key, "-p") != 0) // все что не -p скипаем
+            continue;
+        // символ и вероятность
         char sym;
         double prob;
-        if ((err = parse_prob_value(tokens->items[i].value, &sym, &prob)) != PASSGEN_OK) {
+
+        if ((err = parse_prob_value(tokens->items[i].value, &sym, &prob)) != PASSGEN_OK)
+        {
             goto cleanup;
         }
 
         bool found = false;
-        for (size_t j = 0; j < pt->count; j++) {
-            if (pt->items[j].symbol == sym) {
-                if (pt->items[j].prob >= 0.0) {
+        for (size_t j = 0; j < pt->count; j++)
+        {
+            if (pt->items[j].symbol == sym)
+            {
+                if (pt->items[j].prob >= 0.0)
+                {
                     err = PASSGEN_ERR_DUPLICATE_OPTION;
                     goto cleanup;
                 }
@@ -174,9 +217,10 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
                 break;
             }
         }
-        
-        if (!found) {
-            err = PASSGEN_ERR_UNKNOWN_SYMBOL; 
+
+        if (!found)
+        {
+            err = PASSGEN_ERR_UNKNOWN_SYMBOL;
             goto cleanup;
         }
     }
@@ -184,36 +228,46 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
     double sum = 0.0;
     size_t unassigned = 0;
 
-    for (size_t i = 0; i < pt->count; i++) {
-        if (pt->items[i].prob >= 0.0) {
+    for (size_t i = 0; i < pt->count; i++)
+    {
+        if (pt->items[i].prob >= 0.0)
+        {
             sum += pt->items[i].prob;
-        } else {
+        }
+        else
+        {
             unassigned++;
         }
     }
 
-    if (sum > 1.0 + PROB_EPSILON) {
+    if (sum > 1.0 + PROB_EPSILON)
+    {
         err = PASSGEN_ERR_PROB_OVERFLOW;
         goto cleanup;
     }
 
-    if (unassigned == 0 && fabs(1.0 - sum) > PROB_EPSILON) {
+    if (unassigned == 0 && fabs(1.0 - sum) > PROB_EPSILON)
+    {
         err = PASSGEN_ERR_PROB_INVALID;
         goto cleanup;
     }
 
-    if (unassigned > 0) {
+    if (unassigned > 0)
+    {
         double remainder = fmax(0.0, 1.0 - sum);
         double even_prob = remainder / unassigned;
-        for (size_t i = 0; i < pt->count; i++) {
-            if (pt->items[i].prob < 0.0) {
+        for (size_t i = 0; i < pt->count; i++)
+        {
+            if (pt->items[i].prob < 0.0)
+            {
                 pt->items[i].prob = even_prob;
             }
         }
     }
 
     double current_cdf = 0.0;
-    for (size_t i = 0; i < pt->count; i++) {
+    for (size_t i = 0; i < pt->count; i++)
+    {
         current_cdf += pt->items[i].prob;
         pt->items[i].cdf = current_cdf;
     }

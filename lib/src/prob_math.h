@@ -24,7 +24,7 @@ typedef struct
 {
     ProbItem *items;
     size_t count;
-} ProbTable;
+} ProbTable;//табличка с айтемами
 
 void prob_table_init(ProbTable *pt);
 void prob_table_free(ProbTable *pt);

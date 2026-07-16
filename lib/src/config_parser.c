@@ -11,7 +11,7 @@
 #include <limits.h>
 #include <errno.h>
 
-static PassgenError parse_positive_int(const char *value, int *out_val)
+static PassgenError parse_positive_int(const char *value, int *out_val)//строка из флага в чиселку
 {
     if (value == NULL || *value == '\0')
     {
@@ -31,7 +31,7 @@ static PassgenError parse_positive_int(const char *value, int *out_val)
     return PASSGEN_OK;
 }
 
-void config_init(AppConfig *config)
+void config_init(AppConfig *config) // инициализация
 {
     if (config == NULL)
         return;
@@ -49,7 +49,7 @@ void config_init(AppConfig *config)
     config->has_C = false;
 }
 
-void config_free(AppConfig *config)
+void config_free(AppConfig *config) // очистка конфига
 {
     if (config == NULL)
         return;
@@ -65,7 +65,7 @@ PassgenError config_parse(AppConfig *config, const TokenList *tokens)
 
     PassgenError err = PASSGEN_OK;
 
-    for (size_t i = 0; i < tokens->count; i++)
+    for (size_t i = 0; i < tokens->count; i++)//бежим по всем токенам делаем проверки и выставляем токены в конфиг
     {
         const Token *t = &tokens->items[i];
 
