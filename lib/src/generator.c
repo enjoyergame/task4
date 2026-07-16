@@ -1,3 +1,10 @@
+/*
+реализация генератора паролей
+
+Кучуков Ридаль Радикович
+МК-101
+*/
+
 #include "generator.h"
 #include "config_parser.h"
 
@@ -40,6 +47,22 @@ static char pick_char_by_cdf(const ProbTable *pt, double r)
     return pt->items[pt->count - 1].symbol;
 }
 
+static char get_char_from_group(char group) 
+{
+    static const char LOWER[] = "abcdefghijklmnopqrstuvwxyz";
+    static const char UPPER[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static const char DIGITS[] = "0123456789";
+    static const char SPECIAL[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+
+    switch (group) {
+        case 'a': return LOWER[rand() % (sizeof(LOWER) - 1)];
+        case 'A': return UPPER[rand() % (sizeof(UPPER) - 1)];
+        case 'D': return DIGITS[rand() % (sizeof(DIGITS) - 1)];
+        case 'S': return SPECIAL[rand() % (sizeof(SPECIAL) - 1)];
+        default:  return group;
+    }
+}
+
 PassgenError generator_create_password(const AppConfig *config, const ProbTable *pt, char *out_buffer, size_t buffer_size) 
 {
     if (config == NULL || pt == NULL || out_buffer == NULL) {
@@ -58,7 +81,12 @@ PassgenError generator_create_password(const AppConfig *config, const ProbTable 
 
     for (int i = 0; i < len; i++) {
         double r = (double)rand() / (double)RAND_MAX;
-        out_buffer[i] = pick_char_by_cdf(pt, r);
+        char picked = pick_char_by_cdf(pt, r);
+        if (config->has_C) {
+            out_buffer[i] = get_char_from_group(picked);
+        } else {
+            out_buffer[i] = picked;
+        }
     }
     
     out_buffer[len] = '\0';

@@ -15,3 +15,9 @@ target_include_directories(passgen_lib PUBLIC
 target_include_directories(passgen_lib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+
+# Поиск математической библиотеки m и линковка с ней при нахождении
+find_library(MATH_LIBRARY m)
+if(MATH_LIBRARY)
+    target_link_libraries(passgen_lib PRIVATE ${MATH_LIBRARY})
+endif()

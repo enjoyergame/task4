@@ -1,18 +1,15 @@
 /*
-парсим конфиг
+реализация валидации конфигурации
 
 Кучуков Ридаль Радикович
 МК-101
 */
-#include "config_parser.h"
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <limits.h>
 
 #include "config_parser.h"
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 
 static PassgenError parse_positive_int(const char *value, int *out_val)
 {
@@ -22,9 +19,10 @@ static PassgenError parse_positive_int(const char *value, int *out_val)
     }
 
     char *endptr = NULL;
+    errno = 0;
     long val = strtol(value, &endptr, 10);
 
-    if (*endptr != '\0' || val <= 0)
+    if (errno == ERANGE || val <= 0 || val > INT_MAX || *endptr != '\0')
     {
         return PASSGEN_ERR_NOT_A_NUMBER;
     }
@@ -140,7 +138,6 @@ PassgenError config_parse(AppConfig *config, const TokenList *tokens)
                 goto cleanup_on_error;
             }
             config->has_a = true;
-            // "-a" без значения — валидный случай.
             if (t->value == NULL)
             {
                 err = charset_use_default(&config->charset);
@@ -171,12 +168,6 @@ PassgenError config_parse(AppConfig *config, const TokenList *tokens)
                 goto cleanup_on_error;
             }
             config->has_i = true;
-        }
-        else if (strcmp(t->key, "-d") == 0 || strcmp(t->key, "-D") == 0)
-        {
-        }
-        else if (strcmp(t->key, "-p") == 0)
-        {
         }
     }
 
