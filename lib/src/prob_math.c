@@ -22,7 +22,7 @@ static double parse_simple_double(const char *str, char **endptr)
     while (isspace((unsigned char)*str))
         str++;
 
-    while (isdigit((unsigned char)*str))
+    while (isdigit((unsigned char)*str)) // если 12 result = 0.0 * 10.0 + (1) = 1.0 result = 1.0 * 10.0 +(2) = 12.0
     {
         result = result * 10.0 + (*str - '0');
         str++;
@@ -32,7 +32,7 @@ static double parse_simple_double(const char *str, char **endptr)
     if (*str == '.' || *str == ',')
     {
         str++;
-        while (isdigit((unsigned char)*str))
+        while (isdigit((unsigned char)*str)) // тож самое но после точки делим на 10
         {
             fraction /= 10.0;
             result += (*str - '0') * fraction;
@@ -74,7 +74,7 @@ static PassgenError parse_prob_value(const char *value, char *out_sym, double *o
     char *endptr = NULL;
     double val = parse_simple_double(pstr, &endptr);
 
-    if (*endptr != '\0' || val < 0.0)//после значения должен быть пробел
+    if (*endptr != '\0' || val < 0.0) // после значения должен быть пробел
     {
         return PASSGEN_ERR_NOT_A_NUMBER;
     }
@@ -149,8 +149,8 @@ static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config)
     }
     pt->count = count;
 
-    size_t idx = 0; // индекс по пт айтемс
-    if (config->has_C)
+    size_t idx = 0;    // индекс по пт айтемс
+    if (config->has_C) // группы
     {
         for (size_t i = 0; i < GROUP_MAP_SIZE; i++)
         {
@@ -162,7 +162,7 @@ static PassgenError populate_symbols(ProbTable *pt, const AppConfig *config)
             }
         }
     }
-    else if (config->has_a)
+    else if (config->has_a) // алфавит
     {
         for (size_t i = 0; i < config->charset.custom_len; i++)
         {
@@ -197,28 +197,28 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
         char sym;
         double prob;
 
-        if ((err = parse_prob_value(tokens->items[i].value, &sym, &prob)) != PASSGEN_OK)
+        if ((err = parse_prob_value(tokens->items[i].value, &sym, &prob)) != PASSGEN_OK) // пишем символ и вероятность
         {
             goto cleanup;
         }
-
+        // ищем символ в нашей табличке
         bool found = false;
         for (size_t j = 0; j < pt->count; j++)
         {
             if (pt->items[j].symbol == sym)
             {
-                if (pt->items[j].prob >= 0.0)
+                if (pt->items[j].prob >= 0.0) // то есть записывали раньше
                 {
                     err = PASSGEN_ERR_DUPLICATE_OPTION;
                     goto cleanup;
                 }
-                pt->items[j].prob = prob;
+                pt->items[j].prob = prob; // пишем вероятность символа если все норм
                 found = true;
                 break;
             }
         }
 
-        if (!found)
+        if (!found) // другая табличка или алфавит
         {
             err = PASSGEN_ERR_UNKNOWN_SYMBOL;
             goto cleanup;
@@ -228,7 +228,7 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
     double sum = 0.0;
     size_t unassigned = 0;
 
-    for (size_t i = 0; i < pt->count; i++)
+    for (size_t i = 0; i < pt->count; i++) // цикл по таблице +=у всех вероятностей и считаем скок не задано
     {
         if (pt->items[i].prob >= 0.0)
         {
@@ -240,7 +240,7 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
         }
     }
 
-    if (sum > 1.0 + PROB_EPSILON)
+    if (sum > 1.0 + PROB_EPSILON) // неправильные вероятности
     {
         err = PASSGEN_ERR_PROB_OVERFLOW;
         goto cleanup;
@@ -252,11 +252,12 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
         goto cleanup;
     }
 
-    if (unassigned > 0)
+    if (unassigned > 0) // распределяем остатки равномерно
     {
+        // ищем сколько осталось
         double remainder = fmax(0.0, 1.0 - sum);
         double even_prob = remainder / unassigned;
-        for (size_t i = 0; i < pt->count; i++)
+        for (size_t i = 0; i < pt->count; i++) // пишем во все незаданные значения
         {
             if (pt->items[i].prob < 0.0)
             {
@@ -266,12 +267,13 @@ PassgenError prob_table_build(ProbTable *pt, const AppConfig *config, const Toke
     }
 
     double current_cdf = 0.0;
+    //заполняем cdf табличку
     for (size_t i = 0; i < pt->count; i++)
     {
         current_cdf += pt->items[i].prob;
         pt->items[i].cdf = current_cdf;
     }
-    pt->items[pt->count - 1].cdf = 1.0;
+    pt->items[pt->count - 1].cdf = 1.0;//последний элемент у нас занимает от предыдущего до 1 что бы случайно не переполнится
 
     return PASSGEN_OK;
 
